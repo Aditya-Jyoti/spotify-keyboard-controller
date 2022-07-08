@@ -1,53 +1,46 @@
 import json
 import keyboard
-import math
 import sys
-from datetime import datetime
 from API.API import API
 
 
 # CHANGE DICTIONARY FOR CUSTOM KEYMAPS
 KEYMAPS = {
     "exit": ["alt", "esc"],
-    "pause": ["ctrl", "space"],
-    "play": ["ctrl", "space"],
-    "next_song": ["ctrl", "alt", "l"],
-    "previous_song": ["ctrl", "alt", "h"],
-    "like_song": ["ctrl", "alt", "k"],
-    "dislike_song": ["ctrl", "alt", "j"],
+    "play_pause": ["ctrl", "alt", "space"],
+    "next_song": ["ctrl", "alt", "right"],
+    "previous_song": ["ctrl", "alt", "left"],
+    "like_song": ["ctrl", "alt", "up"],
+    "dislike_song": ["ctrl", "alt", "down"],
     "empty_playlist": ["ctrl", "alt", "p"],
 }
 
 # DO NOT CHANGE BELOW THIS LINE
 
-TIMEOUT = 30
-
-
-def is_playing(api: API) -> bool:
-    playback_state = api.is_playing()
-    if playback_state:
-        return True
-
-    else:
-        start_time = datetime.now()
-        while not playback_state:
-            if keyboard.is_pressed("+".join(KEYMAPS["play"])):
-                api.resume_song()
-                playback_state = api.is_playing()
-                return True
-
-            check = datetime.now() - start_time
-            if math.floor(check.total_seconds()) > TIMEOUT:
-                playback_state = api.is_playing()
-                start_time = datetime.now()
+def check_for_keypress(api: API) -> None:
+    def check_playback_state():
+        is_playing = api.is_playing()
+        if is_playing:
+            api.pause_song()
         else:
-            return True
+            api.resume_song()
+
+    keyboard.add_hotkey("+".join(KEYMAPS["next_song"]), lambda: api.next_song())
+    keyboard.add_hotkey("+".join(KEYMAPS["previous_song"]), lambda: api.previous_song())
+    keyboard.add_hotkey("+".join(KEYMAPS["like_song"]), lambda: api.like_song())
+    keyboard.add_hotkey("+".join(KEYMAPS["dislike_song"]), lambda: api.dislike_song())
+    keyboard.add_hotkey(
+        "+".join(KEYMAPS["empty_playlist"]), lambda: api.clear_liked_playlist()
+    )
+    keyboard.add_hotkey("+".join(KEYMAPS["play_pause"]), lambda: check_playback_state())
+
+    keyboard.wait("+".join(KEYMAPS["exit"]))
 
 
 if __name__ == "__main__":
     with open("secrets.json", "r") as in_file:
         file = json.load(in_file)
-    
+
     if file["spotify_liked_id"] == "":
         liked_id = input("please input link to playlist to store saved songs\n>>>")
         liked_id = liked_id.split("/")[-1].split("?")[0]
@@ -56,32 +49,5 @@ if __name__ == "__main__":
             json.dump(file, out_file)
 
     api = API()
-    is_playing_ = is_playing(api)
-    start_time = datetime.now()
-
-    while is_playing_:
-        if keyboard.is_pressed("+".join(KEYMAPS["exit"])):
-            api.pause_song()
-            sys.exit(0)
-
-        if keyboard.is_pressed("+".join(KEYMAPS["play"])):
-            api.pause_song()
-            is_playing_ = is_playing(api)
-
-        if keyboard.is_pressed("+".join(KEYMAPS["next_song"])):
-            api.previous_song()
-        if keyboard.is_pressed("+".join(KEYMAPS["previous_song"])):
-            api.next_song()
-
-        if keyboard.is_pressed("+".join(KEYMAPS["like_song"])):
-            api.like_song()
-        if keyboard.is_pressed("+".join(KEYMAPS["dislike_song"])):
-            api.dislike_song()
-
-        if keyboard.is_pressed("+".join(KEYMAPS["empty_playlist"])):
-            api.clear_liked_playlist()
-
-        check = datetime.now() - start_time
-        if math.floor(check.total_seconds()) > TIMEOUT:
-            is_playing_ = is_playing(api)
-            start_time = datetime.now()
+    check_for_keypress(api)
+    print("exiting program")
