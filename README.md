@@ -33,7 +33,7 @@ This program is a keyboard controller for spotify. The program takes control of 
 | 06  | `ctrl+alt+down_arrow`  | remove current song from playlist |
 | 07  |      `ctrl+alt+p`      |      empty out the playlist       |
 
-**Note: all keymaps can be changed by changing the `KEYMAPS` dictionary in `main.py`**
+**Note: all keymaps can be changed by changing the [KEYMAPS](https://github.com/Reverend-Toady/spotify-keyboard-controller/blob/43b3ff25a0b226543fc47ee1d852efc39da50763/main.py#L8-L16) dictionary in `main.py`**
 
 ### After thoughts:
 
