@@ -1,7 +1,7 @@
 import json
-import secrets
 import keyboard
 import math
+import sys
 from datetime import datetime
 from API.API import API
 
@@ -9,8 +9,8 @@ from API.API import API
 # CHANGE DICTIONARY FOR CUSTOM KEYMAPS
 KEYMAPS = {
     "exit": ["alt", "esc"],
-    "pause": ["space"],
-    "play": ["space"],
+    "pause": ["ctrl", "space"],
+    "play": ["ctrl", "space"],
     "next_song": ["ctrl", "alt", "l"],
     "previous_song": ["ctrl", "alt", "h"],
     "like_song": ["ctrl", "alt", "k"],
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     while is_playing_:
         if keyboard.is_pressed("+".join(KEYMAPS["exit"])):
             api.pause_song()
-            break
+            sys.exit(0)
 
         if keyboard.is_pressed("+".join(KEYMAPS["play"])):
             api.pause_song()
