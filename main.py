@@ -17,6 +17,7 @@ KEYMAPS = {
 
 # DO NOT CHANGE BELOW THIS LINE
 
+
 def check_for_keypress(api: API) -> None:
     def check_playback_state():
         is_playing = api.is_playing()
@@ -38,16 +39,31 @@ def check_for_keypress(api: API) -> None:
 
 
 if __name__ == "__main__":
-    with open("secrets.json", "r") as in_file:
-        file = json.load(in_file)
+    try:
+        with open("secrets.json", "r") as in_file:
+            file = json.load(in_file)
+    except FileNotFoundError:
+        with open("secrets.json", "w+") as new_file:
+            json.dump(
+                {
+                    "spotify_client_id": "",
+                    "spotify_client_secret": "",
+                    "spotify_liked_id": "",
+                },
+                new_file,
+            )
+            file = json.load(new_file)
 
     if file["spotify_liked_id"] == "":
-        liked_id = input("please input link to playlist to store saved songs\n>>>")
+        liked_id = input(
+            "please input link to playlist that you would like to act as a buffer\n>>>"
+        )
         liked_id = liked_id.split("/")[-1].split("?")[0]
         file["spotify_liked_id"] = liked_id
         with open("secrets.json", "w") as out_file:
             json.dump(file, out_file)
 
     api = API()
+    print("RUNNING PROGRAM")
     check_for_keypress(api)
-    print("exiting program")
+    print("STOPPING PROGRAM")
