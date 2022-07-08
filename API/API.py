@@ -1,17 +1,28 @@
 import json
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from typing import Optional, List, Type
+from typing import List
 
 
 class API:
-    def __init__(
-        self, liked_playlist: str, merger_playlist: Optional[str] = None
-    ) -> None:
+    def __init__(self) -> None:
         with open("secrets.json", "r") as file:
             file = json.load(file)
             client_id = file["spotify_client_id"]
             client_secret = file["spotify_client_secret"]
+            playlist_id = file["spotify_liked_id"]
+
+        if client_id == "" or client_secret == "":
+            client_id = input("please enter your client ID\n>>>")
+            client_secret = input("please enter your client secret\n>>>")
+            with open("secrets.json", "w") as file:
+                json.dump(
+                    {
+                        "spotify_client_id": client_id,
+                        "spotify_client_secret": client_secret,
+                    },
+                    file,
+                )
 
         scopes = [
             "playlist-modify-public",
@@ -20,7 +31,7 @@ class API:
             "user-read-private",
             "user-modify-playback-state",
             "user-read-currently-playing",
-            "user-read-playback-state"
+            "user-read-playback-state",
         ]
 
         self.spotify = spotipy.Spotify(
@@ -31,10 +42,7 @@ class API:
                 scope=" ".join(scopes),
             )
         )
-        self.liked_playlist = liked_playlist.split("/")[-1].split("?")[0]
-
-        if merger_playlist is not None:
-            self.merger_playlist = merger_playlist.split("/")[-1].split("?")[0]
+        self.liked_playlist = playlist_id
 
     def read_playlist_content(self, id_: str) -> List[str]:
         song_ids = []
@@ -82,7 +90,3 @@ class API:
         return self.spotify.playlist_remove_all_occurrences_of_items(
             self.liked_playlist, songs
         )
-
-    def merge_liked_playlist(self) -> bool:
-        liked_songs = self.read_playlist_content(self.liked_playlist)
-        return self.spotify.playlist_add_items(self.merger_playlist, liked_songs)
